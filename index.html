@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rockingham Property Records Scraper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <link href="https://unpkg.com/splitting@1.0.6/dist/splitting.css" rel="stylesheet">
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .hero-bg {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('resources/hero-bg.jpg') center/cover;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #1e293b 0%, #d97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .scraping-status {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .data-row {
+            transition: all 0.2s ease;
+        }
+        .data-row:hover {
+            background-color: #f1f5f9;
+            transform: scale(1.01);
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+            transition: width 0.3s ease;
+        }
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #d97706;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="resources/scraping-icon.png" alt="Scraper Icon" class="w-8 h-8">
+                    <h1 class="text-xl font-bold text-gray-900">Rockingham Property Scraper</h1>
+                </div>
+                <div class="flex space-x-8">
+                    <a href="index.html" class="nav-link text-gray-900 font-medium">Scraper</a>
+                    <a href="dashboard.html" class="nav-link text-gray-600 hover:text-gray-900">Dashboard</a>
+                    <a href="tools.html" class="nav-link text-gray-600 hover:text-gray-900">Tools</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-bg py-12 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-8">
+                <h2 class="text-4xl font-bold gradient-text mb-4" data-splitting>
+                    Advanced Property Records Intelligence
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Streamline your real estate research with automated scraping of Rockingham County and Harrisonburg property records. 
+                    Access comprehensive data including assessments, ownership, sales history, and tax information.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Application Interface -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            <!-- Search Panel -->
+            <div class="lg:col-span-1">
+                <div class="glass-card rounded-xl p-6 hover-lift">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                        </svg>
+                        Search Filters
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Property Address</label>
+                            <input type="text" id="addressSearch" placeholder="Enter street address..." 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Parcel ID</label>
+                            <input type="text" id="parcelSearch" placeholder="Enter parcel ID..." 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Owner Name</label>
+                            <input type="text" id="ownerSearch" placeholder="Enter owner name..." 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Assessment Range</label>
+                            <div class="flex space-x-2">
+                                <input type="number" id="assessMin" placeholder="Min" 
+                                       class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                <input type="number" id="assessMax" placeholder="Max" 
+                                       class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+                            <select id="propertyType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                <option value="">All Types</option>
+                                <option value="residential">Residential</option>
+                                <option value="commercial">Commercial</option>
+                                <option value="agricultural">Agricultural</option>
+                                <option value="industrial">Industrial</option>
+                            </select>
+                        </div>
+                        
+                        <button id="applyFilters" class="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium">
+                            Apply Filters
+                        </button>
+                        
+                        <button id="clearFilters" class="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Display -->
+            <div class="lg:col-span-2">
+                <div class="glass-card rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900">Property Records</h3>
+                        <div class="flex space-x-2">
+                            <button id="exportCSV" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                                Export CSV
+                            </button>
+                            <button id="exportExcel" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                Export Excel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Address</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Owner</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Assessment</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Last Sale</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTable">
+                                <!-- Sample data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-6">
+                        <div class="text-sm text-gray-600">
+                            Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> properties
+                        </div>
+                        <div class="flex space-x-2">
+                            <button id="prevPage" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors">Previous</button>
+                            <span id="pageInfo" class="px-3 py-1 text-gray-600">Page 1 of 1</span>
+                            <button id="nextPage" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 transition-colors">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scraping Controls -->
+            <div class="lg:col-span-1">
+                <div class="space-y-6">
+                    <!-- Scraping Status -->
+                    <div class="glass-card rounded-xl p-6 hover-lift">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            Scraping Status
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Status:</span>
+                                <span id="scrapingStatus" class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-sm">Ready</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Progress:</span>
+                                <span id="scrapingProgress" class="text-sm font-medium">0%</span>
+                            </div>
+                            
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="progressBar" class="progress-bar h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Records Found:</span>
+                                <span id="recordsFound" class="text-sm font-medium">0</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Last Updated:</span>
+                                <span id="lastUpdated" class="text-sm text-gray-500">Never</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 space-y-2">
+                            <button id="startScraping" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium">
+                                Start Scraping
+                            </button>
+                            <button id="stopScraping" class="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors font-medium" disabled>
+                                Stop Scraping
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="glass-card rounded-xl p-6 hover-lift">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                        
+                        <div class="space-y-2">
+                            <button id="scrapeSample" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                Scrape Sample Data
+                            </button>
+                            <button id="clearResults" class="w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium">
+                                Clear Results
+                            </button>
+                            <button id="saveSearch" class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                                Save Search
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- System Info -->
+                    <div class="glass-card rounded-xl p-6 hover-lift">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">System Info</h3>
+                        
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Data Sources:</span>
+                                <span class="text-gray-900">Rockingham County, Harrisonburg</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Update Frequency:</span>
+                                <span class="text-gray-900">Daily</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Rate Limit:</span>
+                                <span class="text-gray-900">60 requests/min</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Compliance:</span>
+                                <span class="text-green-600">✓ Verified</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Property Detail Modal -->
+    <div id="propertyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-900">Property Details</h3>
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="modalContent">
+                    <!-- Property details will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-gray-600">
+                <p class="mb-2">© 2025 Rockingham Property Records Scraper. All rights reserved.</p>
+                <p class="text-sm">This tool complies with Virginia public records laws and respects rate limiting requirements.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
